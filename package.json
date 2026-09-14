@@ -1,0 +1,60 @@
+{
+  "name": "@cookiemunch/react-native",
+  "version": "0.0.0",
+  "description": "Cookie Munch React Native SDK — consent client, hook, banner",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src/RNConsentBanner.tsx",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.72",
+    "expo-secure-store": "*",
+    "react-native-keychain": "*",
+    "@react-native-async-storage/async-storage": "*"
+  },
+  "peerDependenciesMeta": {
+    "expo-secure-store": {
+      "optional": true
+    },
+    "react-native-keychain": {
+      "optional": true
+    },
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cookie-Munch/react-native.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cookie-Munch/react-native/issues"
+  },
+  "homepage": "https://cookiemunch.net",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5.6",
+    "tsup": "^8.3",
+    "vitest": "^2.1",
+    "@types/node": "^22"
+  }
+}
