@@ -42,6 +42,15 @@ export function useConsent() {
   };
 }
 
+/**
+ * Whether `category` is granted right now; re-renders when it changes. `necessary` is
+ * always true; anything else is false until the stored decision has loaded.
+ */
+export function useConsentValue(category: 'necessary' | 'preferences' | 'statistics' | 'marketing'): boolean {
+  const { consent } = useConsent();
+  return category === 'necessary' || consent?.[category] === true;
+}
+
 /** Shows the banner only until the user has responded. */
 export function ConsentBanner() {
   const { consent, hasResponse, acceptAll, rejectAll } = useConsent();
@@ -50,7 +59,7 @@ export function ConsentBanner() {
     <View style={styles.wrap} accessibilityViewIsModal accessibilityRole="alert">
       <Text style={styles.title}>We value your privacy</Text>
       <Text style={styles.body}>
-        We use cookies and similar technologies to improve your experience. You decide what we use.
+        We use cookies. Choose which ones you allow.
       </Text>
       <View style={styles.row}>
         <Pressable style={[styles.btn, styles.ghost]} onPress={rejectAll} accessibilityRole="button">
