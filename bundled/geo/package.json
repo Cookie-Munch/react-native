@@ -1,0 +1,9 @@
+{
+  "name": "@cookiemunch/geo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./regulation": "./src/regulation.ts"
+  }
+}

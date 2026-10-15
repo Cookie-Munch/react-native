@@ -1,6 +1,6 @@
 {
   "name": "@cookiemunch/react-native",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cookie Munch React Native SDK — consent client, hook, banner",
   "type": "module",
   "main": "./dist/index.js",
@@ -48,7 +48,13 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@cookiemunch/geo": "^0.1.0"
+    "@cookiemunch/geo": "file:./bundled/geo",
+    "@types/node": "22.20.0",
+    "@types/react": "19.2.17",
+    "react": "19.2.7",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "2.1.9"
   },
   "cookiemunch": {
     "bundled": [
