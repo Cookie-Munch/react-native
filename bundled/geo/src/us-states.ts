@@ -25,7 +25,7 @@
  */
 
 /** The date a human last checked these entries against their statutes. */
-export const US_STATES_REVIEWED_AT = '2026-05-01';
+export const US_STATES_REVIEWED_AT = '2026-10-30';
 
 export interface UsStateLaw {
   /** Stable id, shared with the regulatory-intelligence feed. */
@@ -44,6 +44,12 @@ export interface UsStateLaw {
   /** When the universal-opt-out duty commences, when later than `effective`. */
   universalOptOutFrom?: string;
   /**
+   * The law requires the business to DISPLAY whether it processed an opt-out preference
+   * signal as a valid opt-out request (e.g. "Opt-Out Request Honored"). Absent = no such
+   * duty. Set only where the regulation text says so, never by analogy with another state.
+   */
+  signalStatusDisplay?: boolean;
+  /**
    * Processing sensitive data needs opt-in consent. False where the law instead grants a
    * right to limit or opt out of it — California's approach, which is a different control
    * on the banner rather than a weaker one.
@@ -51,6 +57,14 @@ export interface UsStateLaw {
   sensitiveOptIn: boolean;
   /** Opt-in is required below this age for sale / targeted advertising. 0 = no such rule. */
   minorOptInUnder: number;
+  /**
+   * What the law does about sale / targeted advertising below `minorOptInUnder`. Absent or
+   * `'opt-in'`: allowed with consent. `'prohibited'`: banned outright — consent does not
+   * cure it, so the embed keeps marketing off for a visitor whose known age is below it.
+   */
+  minorsAds?: 'opt-in' | 'prohibited';
+  /** When the prohibition commences, when later than `effective`. */
+  minorsAdsFrom?: string;
   /** The opt-out rights the law grants, which decide what the preference centre must offer. */
   optOut: Array<'sale' | 'targetedAdvertising' | 'profiling'>;
   /**
@@ -74,6 +88,10 @@ export const US_STATE_LAWS: readonly UsStateLaw[] = [
   {
     id: 'ccpa', state: 'CA', name: 'California Consumer Privacy Act, as amended by the CPRA',
     effective: '2020-01-01', universalOptOut: true,
+    // 11 CCR § 7025(c)(6), in force since 2026-01-01: a business that processes an
+    // opt-out preference signal must display whether it treated it as a valid opt-out
+    // request ("Opt-Out Request Honored").
+    signalStatusDisplay: true,
     // California grants a right to LIMIT the use of sensitive personal information rather
     // than requiring opt-in for it — a distinct control, not a weaker one.
     sensitiveOptIn: false, minorOptInUnder: 16, optOut: ALL,
@@ -98,6 +116,8 @@ export const US_STATE_LAWS: readonly UsStateLaw[] = [
     id: 'ctdpa', state: 'CT', name: 'Connecticut Data Privacy Act',
     effective: '2023-07-01', universalOptOut: true, universalOptOutFrom: '2025-01-01',
     sensitiveOptIn: true, minorOptInUnder: 18, optOut: ALL,
+    // PA 25-113 (SB 1295): under 18, sale and targeted advertising are banned from 2026-07-01.
+    minorsAds: 'prohibited', minorsAdsFrom: '2026-07-01',
     source: 'https://portal.ct.gov/ag/sections/privacy/the-connecticut-data-privacy-act',
     citation: 'Conn. Gen. Stat. §§ 42-515 to 42-525',
   },
@@ -128,12 +148,16 @@ export const US_STATE_LAWS: readonly UsStateLaw[] = [
     id: 'ocpa', state: 'OR', name: 'Oregon Consumer Privacy Act',
     effective: '2024-07-01', universalOptOut: true, universalOptOutFrom: '2026-01-01',
     sensitiveOptIn: true, minorOptInUnder: 16, optOut: ALL,
+    // HB 2008 (2025): under 16, sale, targeted advertising and profiling are banned from 2026-01-01.
+    minorsAds: 'prohibited', minorsAdsFrom: '2026-01-01',
     source: 'https://www.oregonlegislature.gov/bills_laws/ors/ors646A.html',
     citation: 'Or. Rev. Stat. §§ 646A.570 to 646A.589',
   },
   {
     id: 'fdbr', state: 'FL', name: 'Florida Digital Bill of Rights',
-    effective: '2024-07-01', universalOptOut: true,
+    // Reviewed 2026-10-30: §§ 501.705 and 501.709 grant opt-outs but say nothing about a
+    // universal signal, and the CPPA's 2026-08-06 survey of signal states omits Florida.
+    effective: '2024-07-01', universalOptOut: false,
     sensitiveOptIn: true, minorOptInUnder: 18, optOut: ALL,
     source: 'https://www.flsenate.gov/Laws/Statutes/2024/Chapter501/PART_V',
     citation: 'Fla. Stat. §§ 501.701 et seq.',
@@ -212,10 +236,46 @@ export const US_STATE_LAWS: readonly UsStateLaw[] = [
   },
   {
     id: 'ridtppa', state: 'RI', name: 'Rhode Island Data Transparency and Privacy Protection Act',
-    effective: '2026-01-01', universalOptOut: true,
+    // Reviewed 2026-10-30: ch. 6-48.1 (§§ -5, -6, -7) allows an authorised agent but has no
+    // universal opt-out signal duty; the CPPA's 2026-08-06 survey omits Rhode Island too.
+    effective: '2026-01-01', universalOptOut: false,
     sensitiveOptIn: true, minorOptInUnder: 18, optOut: ALL,
     source: 'http://webserver.rilegislature.gov/Statutes/TITLE6/6-48.1/INDEX.htm',
     citation: 'R.I. Gen. Laws §§ 6-48.1-1 et seq.',
+  },
+  // Enacted in 2026, not yet in force — `stateLawFor` ignores them until `effective`.
+  {
+    id: 'okcdpa', state: 'OK', name: 'Oklahoma Consumer Data Privacy Act',
+    effective: '2027-01-01', universalOptOut: false,
+    sensitiveOptIn: true, minorOptInUnder: 13, optOut: ALL,
+    source: 'https://oklegislature.gov/cf_pdf/2025-26%20ENR/SB/SB546%20ENR.PDF',
+    citation: 'Okla. SB 546 (2026), 75A O.S. §§ 300 et seq.',
+  },
+  {
+    id: 'ladpa', state: 'LA', name: 'Louisiana Data Privacy Act',
+    // Texas-style: a browser or device setting acting as authorised agent must be honoured.
+    effective: '2027-01-01', universalOptOut: true,
+    sensitiveOptIn: true, minorOptInUnder: 13, optOut: ALL,
+    source: 'https://www.legis.la.gov/legis/BillInfo.aspx?s=26RS&b=SB386&sbi=y',
+    citation: 'La. Acts 2026, No. 502 (SB 386); La. R.S. 51:1780.1–1780.5',
+  },
+  {
+    id: 'apdpa', state: 'AL', name: 'Alabama Personal Data Protection Act',
+    // § 6(c)(1) mentions a signal only where it conflicts with a loyalty programme; there is
+    // no standalone duty to honour one.
+    effective: '2027-05-01', universalOptOut: false,
+    sensitiveOptIn: true, minorOptInUnder: 16, optOut: ALL,
+    source: 'https://alison.legislature.state.al.us/files/pdf/SearchableInstruments/2026RS/HB351-enr.pdf',
+    citation: 'Ala. HB 351 (2026), enrolled',
+  },
+  {
+    id: 'vdposa', state: 'VT', name: 'Vermont Data Privacy and Online Surveillance Act',
+    effective: '2028-01-01', universalOptOut: true,
+    sensitiveOptIn: true, minorOptInUnder: 18, optOut: ALL,
+    // Act 145 § 2415e(a)(7): under 18 this is a prohibition, not an opt-in.
+    minorsAds: 'prohibited',
+    source: 'https://legislature.vermont.gov/Documents/2026/Docs/ACTS/ACT145/ACT145%20As%20Enacted.pdf',
+    citation: 'Vt. Acts 2026, No. 145 (S.71)',
   },
 ];
 
@@ -244,4 +304,12 @@ export function stateLawFor(region: string | undefined | null, at: number = Date
 export function universalOptOutRequired(law: UsStateLaw, at: number = Date.now()): boolean {
   if (!law.universalOptOut) return false;
   return Date.parse(law.universalOptOutFrom ?? law.effective) <= at;
+}
+
+/**
+ * Whether selling a minor's data / targeting ads at them is banned outright (rather than
+ * allowed with opt-in) for a law at `at` — Connecticut's ban starts years after its law.
+ */
+export function minorsAdsProhibited(law: UsStateLaw, at: number = Date.now()): boolean {
+  return law.minorsAds === 'prohibited' && Date.parse(law.minorsAdsFrom ?? law.effective) <= at;
 }

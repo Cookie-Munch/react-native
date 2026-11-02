@@ -13,7 +13,7 @@
  * each platform's own suite pin the same cases so a drift shows up as a failure.
  */
 
-import { stateLawFor, universalOptOutRequired, type UsStateLaw } from './us-states.js';
+import { stateLawFor, universalOptOutRequired, minorsAdsProhibited, type UsStateLaw } from './us-states.js';
 
 export type RegionClass = 'eu' | 'us' | 'br' | 'ca' | 'other';
 
@@ -56,9 +56,10 @@ export interface Regulation {
    * for a state with no comprehensive law, and for a law that has not commenced. It
    * carries what actually differs between the states: whether a universal opt-out signal
    * must be honoured, whether sensitive data needs opt-in, and the age below which a
-   * minor needs consent rather than an opt-out.
+   * minor needs consent rather than an opt-out. `minorsAdsProhibitedInForce`: below that
+   * age, sale and targeted advertising are banned outright today (consent does not cure it).
    */
-  stateLaw?: UsStateLaw & { universalOptOutInForce: boolean };
+  stateLaw?: UsStateLaw & { universalOptOutInForce: boolean; signalStatusDisplay: boolean; minorsAdsProhibitedInForce: boolean };
   /**
    * Whether a decision still has to be collected from this person. False only when
    * a browser-level signal (GPC/DNT) has already expressed their choice for them —
@@ -124,7 +125,8 @@ export function resolveRegulation(signals: ResolveSignals, opts: ResolveOpts = {
   // Which of the ~20 state laws governs, if any. GPC is honoured in every opt-out state
   // regardless of whether that state mandates it — the flag reports the legal position,
   // it does not gate the behaviour, so an error in the table cannot make us less strict.
-  const law = cls === 'us' ? stateLawFor(region, opts.now ?? Date.now()) : undefined;
+  const at = opts.now ?? Date.now();
+  const law = cls === 'us' ? stateLawFor(region, at) : undefined;
 
   return {
     region,
@@ -135,6 +137,15 @@ export function resolveRegulation(signals: ResolveSignals, opts: ResolveOpts = {
     framework,
     forcedOptOut,
     consentRequired: !forcedOptOut,
-    ...(law ? { stateLaw: { ...law, universalOptOutInForce: universalOptOutRequired(law, opts.now ?? Date.now()) } } : {}),
+    ...(law
+      ? {
+          stateLaw: {
+            ...law,
+            signalStatusDisplay: law.signalStatusDisplay === true,
+            universalOptOutInForce: universalOptOutRequired(law, at),
+            minorsAdsProhibitedInForce: minorsAdsProhibited(law, at),
+          },
+        }
+      : {}),
   };
 }
